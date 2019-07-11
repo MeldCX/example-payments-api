@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MeldCX Example Payments API</title>
+
+    <script src="https://storage.googleapis.com/assets.meld.cx/agent/1.0.18/Agent.js"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        fieldset {
+            width: 50vw;
+            line-height: 25px;
+        }
+
+        input {
+            width: 250px;
+        }
+    </style>
+
+    <!-- I am just here to make the code examples look pretty 😉 -->
+    <link rel="stylesheet" href="prism.css">
+
+    <!-- JQuery and Toast 🍞 😀 -->
+    <link rel="stylesheet" href="jquery.toast.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.toast.min.js"></script>
+</head>
+<body>
+    <h1>MeldCX Example Payments API</h1><hr/>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr);">
+        <fieldset>
+            <legend>New Transaction</legend>
+
+            <label for="txtReferenceId">Reference ID</label>
+            <input name="txtReferenceId" type="text"/>
+            <br/>
+
+            <label for="lstTransactionType">Type</label>
+            <select name="lstTransactionType">
+                <option>PURCHASE</option>
+            </select>
+            <br/>
+
+            <label for="txtValue">Value</label>
+            <input name="txtValue" type="number" min="0.01" max="1000"/>
+            <br/>
+
+            <button>Submit Transaction</button>
+        </fieldset>
+
+        <div>
+            <pre><code class="language-js">// Submit Transaction
+window.Agent.onReadyAsync()
+    .then(() => window.Agent)
+    .then(agent => agent.Payments.startTransaction(5.75, 'some-transaction-id'))
+    .then(result => {
+        console.log('Transaction Completed');
+        if (result.status === 'ACCEPTED') console.log('Transaction Accepted');
+        else console.log('Transaction Rejected');
+        console.log(result);
+    })
+    .catch(ex => {
+        console.error('An error occured when starting transaction');
+        console.error(ex);
+    });</code></pre>
+        </div>
+
+        <fieldset>
+            <legend>Query Transactions</legend>
+
+            <label for="txtQueryReferenceId">Reference ID</label>
+            <input name="txtQueryReferenceId" type="text"/>
+            <br/>
+            <button>Query Transaction</button>
+
+            <code class="queryTransactionResult">
+
+            </code>
+        </fieldset>
+
+        <div>
+            <pre><code class="language-js">// Query Transaction
+window.Agent.onReadyAsync()
+    .then(() => window.Agent)
+    .then(agent => agent.Payments.recoverTransaction('some-transaction-id'))
+    .then(result => {
+        console.log('Transaction Status');
+        console.log(result);
+    })
+    .catch(ex => {
+        console.error('An error occured when recovering transaction');
+        console.error(ex);
+    });</code></pre>
+        </div>
+
+        <fieldset>
+            <legend>Cancel Transaction</legend>
+
+            <label for="txtCancelReferenceId">Reference ID</label>
+            <input name="txtCancelReferenceId" type="text"/>
+            <br/>
+            <button>Cancel Transaction</button>
+        </fieldset>
+
+        <div>
+            <pre><code class="language-js">// Cancel Transaction
+window.Agent.onReadyAsync()
+    .then(() => window.Agent)
+    .then(agent => agent.Payments.cancelTransaction('some-transaction-id'))
+    .then(result => {
+        console.log('Transaction Cancelled');
+        console.log(result);
+    })
+    .catch(ex => {
+        console.error('An error occured when cancelling transaction');
+        console.error(ex);
+    });</code></pre>
+        </div>
+    </div>
+    <br/><br/>
+    <table border="1" style="width: calc(100vw - 20px);">
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Type</th>
+                <th>Reference ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Error</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <script>
+        const [txtReferenceId, txtValue, txtQueryReferenceId, txtCancelReferenceId] = document.querySelectorAll('input');
+        const [btnSubmit, btnQuery, btnCancel] = document.querySelectorAll('button');
+        const [tblBody] = document.querySelectorAll('tbody');
+        const divQueryTransactionResult = document.querySelector('.queryTransactionResult');
+
+        const submitTransaction = () => {
+            const referenceId = txtReferenceId.value;
+            const value = txtValue.value;
+
+            const tr = document.createElement('tr');
+            tr.setAttribute('id', referenceId);
+
+            const [tdTransactionId, tdType, tdReferenceId, tdAmount, tdStatus, tdError] = Array.from({length: 6}).map(() => document.createElement('td'));
+
+            window.Agent.onReadyAsync()
+                .then(() => window.Agent)
+                .then(agent => {
+                    
+                    tdReferenceId.textContent = referenceId;
+                    tdAmount.textContent = `$${parseFloat(value).toFixed(2)}`;
+                    tdStatus.textContent = 'PENDING';
+                    tdType.textContent = 'PURCHASE';
+
+                    tr.appendChild(tdTransactionId);
+                    tr.appendChild(tdType);
+                    tr.appendChild(tdReferenceId);
+                    tr.appendChild(tdAmount);
+                    tr.appendChild(tdStatus);
+                    tr.appendChild(tdError);
+
+                    tblBody.appendChild(tr);
+                    
+                    return agent.Payments.startTransaction(value, referenceId);
+                })
+                .then(result => {
+                    tdTransactionId.textContent = result.id;
+
+                    if (result.error.approved) {
+                        tdStatus.textContent = result.status;
+                        tdStatus.style.color = 'green';
+                        tdStatus.style.fontWeight = 'bold';
+
+                        tdError.textContent = `${result.error.code} - ${result.error.message}`;
+                        tdError.style.color = 'green';
+                        tdError.style.fontWeight = 'bold';
+                    } else {
+                        tdStatus.textContent = result.status;
+                        tdStatus.style.color = 'red';
+                        tdStatus.style.fontWeight = 'bold';
+
+                        tdError.textContent = `${result.error.code} - ${result.error.message}`;
+                        tdError.style.color = 'red';
+                        tdError.style.fontWeight = 'bold';
+                    }
+                })
+                .catch(ex => {
+                    console.error(ex);
+
+                    tdStatus.textContent = 'ERROR';
+                    tdStatus.style.color = 'red';
+                    tdStatus.style.fontWeight = 'bold';
+
+                    tdError.textContent = ex.toString();
+                    tdError.style.color = 'red';
+                    tdError.style.fontWeight = 'bold';
+                });
+        };
+
+        const queryTransaction = () => {
+            window.Agent.onReadyAsync()
+                .then(() => window.Agent)
+                .then(agent => agent.Payments.recoverTransaction(txtQueryReferenceId.value))
+                .then(response => {
+                    divQueryTransactionResult.textContent = `${JSON.stringify(response, null, 4)}\r\n\r\nAs of: ${new Date()}`
+                })
+                .catch(ex => {
+                    $.toast({
+                        text: `<b>Error occured when getting card data</b><br>${ex.toString().slice(0, 100)}`,
+                        bgColor: 'red',
+                        textColor: '#000',
+                        hideAfter : 15000,
+                        icon: 'error'
+                    });
+                });
+        };
+
+        const cancelTransaction = () => {
+            window.Agent.onReadyAsync()
+                .then(() => window.Agent)
+                .then(agent => agent.Payments.cancelTransaction(txtCancelReferenceId.value))
+                .then(result => {
+                    console.log({result});
+                    const tr = document.querySelector(`#${txtCancelReferenceId.value}`);
+                    tr.style.color = '#ccc';
+
+                    const [tdTransactionId, tdType, tdReferenceId, tdAmount, tdStatus, tdError] = document.querySelectorAll(`#${txtCancelReferenceId.value} > *`)
+                    tdTransactionId.textContent = result.id;
+                    tdStatus.textContent = result.status;
+                    tdStatus.style.color = '#ccc';
+                    tdError.textContent = '';
+                    tdError.style.color = '#ccc';
+                })
+                .catch(ex => {
+                    $.toast({
+                        text: `<b>Error occured when getting card data</b><br>${ex.toString().slice(0, 100)}`,
+                        bgColor: 'red',
+                        textColor: '#000',
+                        hideAfter : 15000,
+                        icon: 'error'
+                    });
+                });
+        };
+
+        btnSubmit.onclick = () => submitTransaction();
+        btnQuery.onclick = () => queryTransaction();
+        btnCancel.onclick = () => cancelTransaction();
+        
+    </script>
+
+    <!-- I am just here to make the code examples look pretty 🦄 -->
+    <script src="prism.js"></script>
+</body>
+</html>
