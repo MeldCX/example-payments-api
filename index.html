@@ -183,9 +183,11 @@ window.Agent.onReadyAsync()
                         tdStatus.style.color = 'green';
                         tdStatus.style.fontWeight = 'bold';
 
-                        tdError.textContent = `${result.error.code} - ${result.error.message}`;
-                        tdError.style.color = 'green';
-                        tdError.style.fontWeight = 'bold';
+                        if (result.error) {
+                            tdError.textContent = `${result.error.code} - ${result.error.message}`;
+                            tdError.style.color = 'green';
+                            tdError.style.fontWeight = 'bold';
+                        }
                     } else {
                         tdStatus.textContent = result.status;
                         tdStatus.style.color = 'red';
