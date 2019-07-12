@@ -250,7 +250,7 @@ window.Agent.onReadyAsync()
                 .then(agent => agent.Payments.cancelTransaction(txtCancelReferenceId.value))
                 .then(result => {
                     console.log({result});
-                    const tr = document.querySelector(`#${txtCancelReferenceId.value}`);
+                    const tr = document.getElementById(txtCancelReferenceId.value);
                     tr.style.color = '#ccc';
 
                     const [tdTransactionId, tdType, tdReferenceId, tdAmount, tdStatus, tdError] = document.querySelectorAll(`#${txtCancelReferenceId.value} > *`)
