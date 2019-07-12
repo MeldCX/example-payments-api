@@ -57,7 +57,7 @@
             <pre><code class="language-js">// Submit Transaction
 window.Agent.onReadyAsync()
     .then(() => window.Agent)
-    .then(agent => agent.Payments.startTransaction(5.75, 'some-transaction-id'))
+    .then(agent => agent.Payments.startTransaction(5.75, 'some-transaction-id', agent.Payments.TransactionType.PURCHASE))
     .then(result => {
         console.log('Transaction Completed');
         if (result.status === 'ACCEPTED') console.log('Transaction Accepted');
@@ -78,9 +78,9 @@ window.Agent.onReadyAsync()
             <br/>
             <button>Query Transaction</button>
 
-            <code class="queryTransactionResult">
+            <div class="queryTransactionResult">
 
-            </code>
+            </div>
         </fieldset>
 
         <div>
@@ -175,6 +175,7 @@ window.Agent.onReadyAsync()
                     return agent.Payments.startTransaction(value, referenceId);
                 })
                 .then(result => {
+                    console.log(result);
                     tdTransactionId.textContent = result.id;
 
                     if (result.error.approved) {
@@ -213,9 +214,21 @@ window.Agent.onReadyAsync()
                 .then(() => window.Agent)
                 .then(agent => agent.Payments.recoverTransaction(txtQueryReferenceId.value))
                 .then(response => {
-                    divQueryTransactionResult.textContent = `${JSON.stringify(response, null, 4)}\r\n\r\nAs of: ${new Date()}`
+                    divQueryTransactionResult.innerHTML = `${JSON.stringify(response, null, 4)}\r\nAs of: ${new Date()}`
+
+                    const divReceipt = document.createElement('div');
+                    divReceipt.innerHTML = response.receipt.split('\n').join('<br/>');
+                    divReceipt.style.fontFamily = 'Courier New';
+                    divReceipt.style.border = '1px solid black';
+                    divReceipt.style.width = '250px';
+                    divReceipt.style.padding = '5px 5px 5px 5px';
+                    divReceipt.style.marginTop ='10px';
+
+                    divQueryTransactionResult.appendChild(divReceipt);
                 })
                 .catch(ex => {
+                    console.error(ex);
+
                     $.toast({
                         text: `<b>Error occured when getting card data</b><br>${ex.toString().slice(0, 100)}`,
                         bgColor: 'red',
