@@ -188,6 +188,9 @@ window.Agent.onReadyAsync()
                             tdError.style.color = 'green';
                             tdError.style.fontWeight = 'bold';
                         }
+                    } else if (result.status === 'CANCELLED') {
+                        tdStatus.textContent = result.status;
+                        tdStatus.style.color = '#ccc';
                     } else {
                         tdStatus.textContent = result.status;
                         tdStatus.style.color = 'red';
