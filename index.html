@@ -150,7 +150,7 @@ window.Agent.onReadyAsync()
             const value = txtValue.value;
 
             const tr = document.createElement('tr');
-            tr.setAttribute('id', referenceId);
+            tr.setAttribute('id', `rid-${referenceId}`);
 
             const [tdTransactionId, tdType, tdReferenceId, tdAmount, tdStatus, tdError] = Array.from({length: 6}).map(() => document.createElement('td'));
 
@@ -250,10 +250,10 @@ window.Agent.onReadyAsync()
                 .then(agent => agent.Payments.cancelTransaction(txtCancelReferenceId.value))
                 .then(result => {
                     console.log({result});
-                    const tr = document.getElementById(txtCancelReferenceId.value);
+                    const tr = document.getElementById(`rid-${txtCancelReferenceId.value}`);
                     tr.style.color = '#ccc';
 
-                    const [tdTransactionId, tdType, tdReferenceId, tdAmount, tdStatus, tdError] = document.querySelectorAll(`#${txtCancelReferenceId.value} > *`)
+                    const [tdTransactionId, tdType, tdReferenceId, tdAmount, tdStatus, tdError] = document.querySelectorAll(`#rid-${txtCancelReferenceId.value} > *`)
                     tdTransactionId.textContent = result.id;
                     tdStatus.textContent = result.status;
                     tdStatus.style.color = '#ccc';
