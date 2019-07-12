@@ -178,7 +178,7 @@ window.Agent.onReadyAsync()
                     console.log(result);
                     tdTransactionId.textContent = result.id;
 
-                    if (result.error.approved) {
+                    if (result.status === 'ACCEPTED') {
                         tdStatus.textContent = result.status;
                         tdStatus.style.color = 'green';
                         tdStatus.style.fontWeight = 'bold';
